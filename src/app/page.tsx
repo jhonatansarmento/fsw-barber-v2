@@ -7,17 +7,16 @@ import { Badge } from "./_components/ui/badge"
 import { Button } from "./_components/ui/button"
 import { Card, CardContent } from "./_components/ui/card"
 import { Input } from "./_components/ui/input"
+import { quickSearchOptions } from "./_constants/search"
 import { db } from "./_lib/prisma"
 
 const Home = async () => {
   const barbershops = await db.barbershop.findMany({})
-  console.log("🚀 ~ Home ~ barbershops:", barbershops)
   const popularBarbershops = await db.barbershop.findMany({
     orderBy: {
       name: "desc",
     },
   })
-  console.log("🚀 ~ Home ~ popularBarbershops:", popularBarbershops)
 
   return (
     <div>
@@ -33,6 +32,21 @@ const Home = async () => {
           <Button>
             <SearchIcon />
           </Button>
+        </div>
+
+        {/* BUSCA RÁPIDA */}
+        <div className="mt-6 flex gap-3 overflow-x-scroll [&::-webkit-scrollbar]:hidden">
+          {quickSearchOptions.map((option) => (
+            <Button className="gap-2" variant="secondary" key={option.title}>
+              <Image
+                src={option.imageUrl}
+                width={16}
+                height={16}
+                alt={option.title}
+              />
+              {option.title}
+            </Button>
+          ))}
         </div>
 
         {/* IMAGEM */}
@@ -89,6 +103,16 @@ const Home = async () => {
           ))}
         </div>
       </div>
+
+      <footer>
+        <Card>
+          <CardContent className="px-5 py-6">
+            <p className="text-sm text-gray-400">
+              © 2023 Copyright <span className="font-bold">FSW Barber</span>
+            </p>
+          </CardContent>
+        </Card>
+      </footer>
     </div>
   )
 }
