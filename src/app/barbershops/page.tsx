@@ -1,62 +1,87 @@
-import BarbershopItem from "../_components/barbershop-item"
+import { getServerSession } from "next-auth"
+import { notFound } from "next/navigation"
+import BookingItem from "../_components/booking-item"
 import Header from "../_components/header"
-import Search from "../_components/search"
+import { authOptions } from "../_lib/auth"
 import { db } from "../_lib/prisma"
 
-interface BarbershopsPageProps {
-  searchParams: {
-    title?: string
-    service?: string
+const Bookings = async () => {
+  const session = await getServerSession(authOptions)
+  if (!session?.user) {
+    // TODO: mostrar pop-up de login
+    return notFound()
   }
-}
-
-const BarbershopsPage = async ({ searchParams }: BarbershopsPageProps) => {
-  const barbershops = await db.barbershop.findMany({
+  const confirmedBookings = await db.booking.findMany({
     where: {
-      OR: [
-        searchParams?.title
-          ? {
-              name: {
-                contains: searchParams?.title,
-                mode: "insensitive",
-              },
-            }
-          : {},
-        searchParams.service
-          ? {
-              services: {
-                some: {
-                  name: {
-                    contains: searchParams.service,
-                    mode: "insensitive",
-                  },
-                },
-              },
-            }
-          : {},
-      ],
+      userId: (session.user as any).id,
+      date: {
+        gte: new Date(),
+      },
+    },
+    include: {
+      service: {
+        include: {
+          barbershop: true,
+        },
+      },
+    },
+    orderBy: {
+      date: "asc",
+    },
+  })
+  const concludedBookings = await db.booking.findMany({
+    where: {
+      userId: (session.user as any).id,
+      date: {
+        lt: new Date(),
+      },
+    },
+    include: {
+      service: {
+        include: {
+          barbershop: true,
+        },
+      },
+    },
+    orderBy: {
+      date: "asc",
     },
   })
 
   return (
-    <div>
+    <>
       <Header />
-      <div className="my-6 px-5">
-        <Search />
+      <div className="space-y-3 p-5">
+        <h1 className="text-xl font-bold">Agendamentos</h1>
+        {confirmedBookings.length > 0 && (
+          <>
+            <h2 className="mb-3 mt-6 text-xs font-bold uppercase text-gray-400">
+              Confirmados
+            </h2>
+            {confirmedBookings.map((booking) => (
+              <BookingItem
+                key={booking.id}
+                booking={JSON.parse(JSON.stringify(booking))}
+              />
+            ))}
+          </>
+        )}
+        {concludedBookings.length > 0 && (
+          <>
+            <h2 className="mb-3 mt-6 text-xs font-bold uppercase text-gray-400">
+              Finalizados
+            </h2>
+            {concludedBookings.map((booking) => (
+              <BookingItem
+                key={booking.id}
+                booking={JSON.parse(JSON.stringify(booking))}
+              />
+            ))}
+          </>
+        )}
       </div>
-      <div className="px-5">
-        <h2 className="mb-3 mt-6 text-xs font-bold uppercase text-gray-400">
-          Resultados para &quot;{searchParams?.title || searchParams?.service}
-          &quot;
-        </h2>
-        <div className="grid grid-cols-2 gap-4">
-          {barbershops.map((barbershop) => (
-            <BarbershopItem key={barbershop.id} barbershop={barbershop} />
-          ))}
-        </div>
-      </div>
-    </div>
+    </>
   )
 }
 
-export default BarbershopsPage
+export default Bookings

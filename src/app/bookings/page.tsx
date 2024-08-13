@@ -1,9 +1,9 @@
 import { getServerSession } from "next-auth"
-import Header from "../_components/header"
-import { db } from "../_lib/prisma"
-import { authOptions } from "../_lib/auth"
 import { notFound } from "next/navigation"
 import BookingItem from "../_components/booking-item"
+import Header from "../_components/header"
+import { authOptions } from "../_lib/auth"
+import { db } from "../_lib/prisma"
 
 const Bookings = async () => {
   const session = await getServerSession(authOptions)
@@ -59,7 +59,10 @@ const Bookings = async () => {
               Confirmados
             </h2>
             {confirmedBookings.map((booking) => (
-              <BookingItem key={booking.id} booking={booking} />
+              <BookingItem
+                key={booking.id}
+                booking={JSON.parse(JSON.stringify(booking))}
+              />
             ))}
           </>
         )}
@@ -69,7 +72,10 @@ const Bookings = async () => {
               Finalizados
             </h2>
             {concludedBookings.map((booking) => (
-              <BookingItem key={booking.id} booking={booking} />
+              <BookingItem
+                key={booking.id}
+                booking={JSON.parse(JSON.stringify(booking))}
+              />
             ))}
           </>
         )}

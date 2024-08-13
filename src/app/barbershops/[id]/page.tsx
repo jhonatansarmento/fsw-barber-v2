@@ -93,8 +93,8 @@ const BarbershopPage = async ({ params }: BarbershopPageProps) => {
           {barbershop.services.map((service) => (
             <ServiceItem
               key={service.id}
-              barbershop={barbershop}
-              service={service}
+              barbershop={JSON.parse(JSON.stringify(barbershop))}
+              service={JSON.parse(JSON.stringify(service))}
             />
           ))}
         </div>
@@ -102,8 +102,8 @@ const BarbershopPage = async ({ params }: BarbershopPageProps) => {
 
       {/* CONTATO */}
       <div className="space-y-3 p-5">
-        {barbershop.phones.map((phone, index) => (
-          <PhoneItem key={index} phone={phone} />
+        {barbershop.phones.map((phone) => (
+          <PhoneItem key={phone} phone={phone} />
         ))}
       </div>
     </div>
